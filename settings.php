@@ -44,7 +44,7 @@ if ($hassiteconfig) {
         $settings->add(new admin_setting_configtext('mod_opencast/themeurl_' . $ocinstance->id,
                 new lang_string('settings:themeurl', 'mod_opencast'),
                 new lang_string('settings:themeurl_desc', 'mod_opencast'),
-                '/mod/opencast/paella/default_theme/theme.json'));
+                '/mod/opencast/paella/public/default_theme/theme.json'));
 
         $settings->add(
             new admin_setting_heading('mod_opencast/download_' . $ocinstance->id,

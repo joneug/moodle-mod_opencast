@@ -102,16 +102,16 @@ class output_helper {
     public static function output_episode($ocinstanceid, $episodeid, $modinstanceid, $seriesid = null): void {
         global $PAGE, $OUTPUT, $DB;
 
-        list($data, $errormessage) = paella_transform::get_paella_data_json($ocinstanceid, $episodeid, $seriesid);
+        list($manifest, $errormessage) = paella_transform::get_paella_manifest($ocinstanceid, $episodeid, $seriesid);
 
-        if (empty($data)) {
+        if (empty($manifest)) {
             echo $OUTPUT->header();
             echo $OUTPUT->heading($errormessage);
             echo $OUTPUT->footer();
             return;
         }
 
-        $title = $data['metadata']['title'];
+        $title = $manifest['metadata']['title'];
 
         if ($seriesid) {
             // If episode is viewed as part of a series, add episode title to navbar.
@@ -122,14 +122,10 @@ class output_helper {
         }
 
         echo $OUTPUT->header();
-
-        $configurl = new \moodle_url(get_config('mod_opencast', 'configurl_' . $ocinstanceid));
-        $themeurl = new \moodle_url(get_config('mod_opencast', 'themeurl_' . $ocinstanceid));
-        echo \html_writer::script('window.episode = ' . json_encode($data));
         echo '<br>';
 
         // Show error if there are no streams.
-        if (count($data['streams']) === 0) {
+        if (count($manifest['streams']) === 0) {
             \core\notification::error(get_string('erroremptystreamsources', 'mod_opencast'));
             echo $OUTPUT->footer();
             return;
@@ -137,8 +133,8 @@ class output_helper {
 
         // Find aspect-ratio of the first video track.
         $wrapperattrs = [];
-        if (!empty($data['streams']) && !empty($data['streams'][0]['sources'])) {
-            $sources = $data['streams'][0]['sources'];
+        if (!empty($manifest['streams']) && !empty($manifest['streams'][0]['sources'])) {
+            $sources = $manifest['streams'][0]['sources'];
             $res = $sources[array_key_first($sources)][0]['res'];
             $resolution = $res['w'] . '/' . $res['h'];
             $wrapperattrs['style'] = '--aspect-ratio:' . $resolution;
@@ -149,8 +145,10 @@ class output_helper {
         echo '<iframe src="player.html" id="player-iframe" class="mod-opencast-paella-player" allowfullscreen"></iframe>';
         echo \html_writer::end_div();
 
-        $PAGE->requires->js_call_amd('mod_opencast/opencast_player', 'init',
-                [$configurl->out(false), $themeurl->out(false)]);
+        $configurl = new \moodle_url(get_config('mod_opencast', 'configurl_' . $ocinstanceid));
+        $themeurl = new \moodle_url(get_config('mod_opencast', 'themeurl_' . $ocinstanceid));
+        $PAGE->requires->js_call_amd('mod_opencast/opencast_players', 'init',
+                [$configurl->out(false), $themeurl->out(false), $manifest]);
 
         $moduleinstance = $DB->get_record('opencast', ['id' => $modinstanceid], '*', MUST_EXIST);
         if (get_config('mod_opencast', 'global_download_' . $ocinstanceid) || $moduleinstance->allowdownload) {

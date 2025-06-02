@@ -335,13 +335,13 @@ class paella_transform {
      * @return array An array containing the prepared data and any error messages.
      *               The array has the following structure: [data, errormessage].
      *               If there are no errors, the data will be an associative array with the following keys:
-     *               - 'metadata': An associative array containing the video's metadata (id, title, duration, preview).
+     *               - 'metadata': An associative array containing the video's metadata (title, duration, preview).
      *               - 'streams': An array containing the video's streams.
      *               - 'frameList': An array containing the video's frame list.
      *               - 'captions': An array containing the video's captions.
      *               If there are errors, the data will be false, and the errormessage will contain the error message.
      */
-    public static function get_paella_data_json($ocinstanceid, $episodeid, $seriesid = null) {
+    public static function get_paella_manifest($ocinstanceid, $episodeid, $seriesid = null) {
         $haserror = false;
         $errormessage = '';
         $data = false;
@@ -360,7 +360,6 @@ class paella_transform {
             if (!$haserror) {
                 $data = [
                     'metadata' => [
-                        'id' => $episodeid,
                         'title' => $episode->title,
                         'duration' => self::get_duration($publication),
                         'preview' => self::get_preview_image($publication),
